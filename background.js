@@ -1,32 +1,49 @@
 /*global chrome, alert */
 
-function thereIsAnError(textToShow, errorToShow) {
+/**
+ * Display an alert with an error message, description
+ *
+ * @param  {string} textToShow  Error message text
+ * @param  {string} errorToShow Error to show
+ */
+function displayeAnError(textToShow, errorToShow) {
     "use strict";
 
     alert(textToShow + '\n' + errorToShow);
 }
 
-function getUrlParam(url, sname) {
+/**
+ * Retrieve a value of a parameter from the given URL string
+ *
+ * @param  {string} url           Url string
+ * @param  {string} parameterName Name of the parameter
+ *
+ * @return {string}               Value of the parameter
+ */
+function getUrlParameterValue(url, parameterName) {
     "use strict";
 
-    var params = url.substr(url.indexOf("#") + 1),
-        sval   = "",
-        i,
+    var urlParameters  = url.substr(url.indexOf("#") + 1),
+        parameterValue = "",
+        index,
         temp;
 
-    params = params.split("&");
+    urlParameters = urlParameters.split("&");
 
-    for (i = 0; i < params.length; i += 1) {
-        temp = params[i].split("=");
+    for (index = 0; index < urlParameters.length; index += 1) {
+        temp = urlParameters[index].split("=");
 
-        if (temp[0] === sname) {
-            sval = temp[1];
+        if (temp[0] === parameterName) {
+            return temp[1];
         }
     }
 
-    return sval;
+    return parameterValue;
 }
 
+/**
+ * Handle main functionality of 'onlick' chrome context menu item method
+ */
 function getClickHandler() {
     "use strict";
 
@@ -60,11 +77,11 @@ function getClickHandler() {
                                 authenticationTabId = null;
                                 chrome.tabs.onUpdated.removeListener(tabUpdateListener);
 
-                                vkAccessToken = getUrlParam(changeInfo.url, 'access_token');
+                                vkAccessToken = getUrlParameterValue(changeInfo.url, 'access_token');
 
                                 if (vkAccessToken !== undefined && vkAccessToken.length > 0) {
 
-                                    vkAccessTokenExpiredFlag = Number(getUrlParam(changeInfo.url, 'expires_in'));
+                                    vkAccessTokenExpiredFlag = Number(getUrlParameterValue(changeInfo.url, 'expires_in'));
 
                                     if (vkAccessTokenExpiredFlag === 0) {
                                         chrome.storage.local.set({'vkaccess_token': vkAccessToken}, function () {
@@ -78,10 +95,10 @@ function getClickHandler() {
                                             );
                                         });
                                     } else {
-                                        thereIsAnError('vk auth response problem', 'vkAccessTokenExpiredFlag != 0' + vkAccessToken);
+                                        displayeAnError('vk auth response problem', 'vkAccessTokenExpiredFlag != 0' + vkAccessToken);
                                     }
                                 } else {
-                                    thereIsAnError('vk auth response problem', 'access_token length = 0 or vkAccessToken == undefined');
+                                    displayeAnError('vk auth response problem', 'access_token length = 0 or vkAccessToken == undefined');
                                 }
                             }
                         }
@@ -92,6 +109,9 @@ function getClickHandler() {
     };
 }
 
+/**
+ * Handler of chrome context menu creation process -creates a new item in the context menu
+ */
 chrome.contextMenus.create({
     "title": "Rehost on vk.com",
     "type": "normal",
